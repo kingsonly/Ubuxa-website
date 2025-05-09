@@ -1,6 +1,6 @@
 "use client"
 
-import { Calendar } from "@/components/ui/calendar"
+
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
@@ -19,21 +19,8 @@ import {
   User,
   Users,
 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useToast } from "@/hooks/use-toast"
+
+
 
 // Mock tenant data
 const mockTenants = [
@@ -795,4 +782,13 @@ export default function AdminDashboard() {
   )
 }
 
-import { CheckCircle, Mail, TextIcon as Textarea, X, Zap } from "lucide-react"
+import { CheckCircle, Mail, TextIcon as Textarea, X, Zap } from "lucide-react";import { useToast } from "components/ui/use-toast"
+import { Badge } from "components/ui/badge"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "components/ui/avatar"
+import { Card, CardContent } from "components/ui/card"
+import { Input } from "components/ui/input"
+import { Button } from "components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "components/ui/tabs"
+import { Calendar } from "components/ui/calendar"
+

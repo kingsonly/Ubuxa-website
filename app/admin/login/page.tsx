@@ -1,7 +1,7 @@
 "use client"
-
+ 
 import type React from "react"
-
+ 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
-
+ 
 export default function AdminLogin() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -18,27 +18,27 @@ export default function AdminLogin() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
-
+ 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-
+ 
     try {
       // In a real application, you would make an API call to authenticate
       // For demo purposes, we'll use a simple check
       if (email === "admin@ubuxa.com" && password === "admin123") {
         // Simulate API delay
         await new Promise((resolve) => setTimeout(resolve, 1000))
-
+ 
         // Store auth token in localStorage or cookies
         localStorage.setItem("adminAuth", "true")
-
+ 
         toast({
           title: "Login successful",
           description: "Welcome to the Ubuxa admin dashboard",
           variant: "default",
         })
-
+ 
         router.push("/admin/dashboard")
       } else {
         toast({
@@ -57,7 +57,7 @@ export default function AdminLogin() {
       setIsLoading(false)
     }
   }
-
+ 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-100">
       <div className="w-full max-w-md px-4">
@@ -68,7 +68,7 @@ export default function AdminLogin() {
           <h1 className="text-2xl font-bold text-slate-900">Admin Portal</h1>
           <p className="text-slate-600 mt-2">Sign in to manage your tenants</p>
         </div>
-
+ 
         <Card className="border-slate-200 shadow-lg">
           <CardHeader>
             <CardTitle className="text-xl">Admin Login</CardTitle>
@@ -95,7 +95,7 @@ export default function AdminLogin() {
                   />
                 </div>
               </div>
-
+ 
               <div className="space-y-2">
                 <label htmlFor="password" className="text-sm font-medium text-slate-700">
                   Password
@@ -132,7 +132,7 @@ export default function AdminLogin() {
             </CardFooter>
           </form>
         </Card>
-
+ 
         <div className="mt-6 text-center">
           <a href="#" className="text-sm text-blue-600 hover:text-blue-800">
             Forgot your password?
