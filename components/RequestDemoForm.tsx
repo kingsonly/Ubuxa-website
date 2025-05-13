@@ -123,6 +123,7 @@ export default function RequestDemoForm() {
                       placeholder="John"
                       {...register("firstName")}
                     />
+                    {errors.firstName && <p className="text-sm text-red-500 mt-1">{errors.firstName.message}</p>}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -134,6 +135,7 @@ export default function RequestDemoForm() {
                       placeholder="Doe"
                       {...register("lastName")}
                     />
+                    {errors.lastName && <p className="text-sm text-red-500 mt-1">{errors.lastName.message}</p>}
                   </div>
                 </div>
 
@@ -147,6 +149,7 @@ export default function RequestDemoForm() {
                     placeholder="Energy Solutions Inc."
                     {...register("companyName")}
                   />
+                  {errors.companyName && <p className="text-sm text-red-500 mt-1">{errors.companyName.message}</p>}
                 </div>
 
                 <div>
@@ -159,6 +162,7 @@ export default function RequestDemoForm() {
                     placeholder="john@energysolutions.com"
                     {...register("email")}
                   />
+                  {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>}
                 </div>
 
                 <div>
@@ -171,6 +175,7 @@ export default function RequestDemoForm() {
                     placeholder="+1 (555) 123-4567"
                     {...register("phone")}
                   />
+                  {errors.phone && <p className="text-sm text-red-500 mt-1">{errors.phone.message}</p>}
                 </div>
 
                 <div>
@@ -188,6 +193,7 @@ export default function RequestDemoForm() {
                     <option value="agents">Agent Management</option>
                     <option value="all">Full Platform</option>
                   </select>
+                  {errors.interest && <p className="text-sm text-red-500 mt-1">{errors.interest.message}</p>}
                 </div>
 
                 <div>
@@ -199,6 +205,7 @@ export default function RequestDemoForm() {
                     placeholder="Tell us about your business needs..."
                     {...register("moreInfo")}
                   ></textarea>
+                  {errors.moreInfo && <p className="text-sm text-red-500 mt-1">{errors.moreInfo.message}</p>}
                 </div>
 
                 <Button
