@@ -112,16 +112,11 @@ export default function AdminDashboard() {
   const router = useRouter()
   const { toast } = useToast()
 
-  // Check authentication
-  useEffect(() => {
-    const isAuthenticated = localStorage.getItem("adminAuth") === "true"
-    if (!isAuthenticated) {
-      router.push("/admin/login")
-    }
-  }, [router])
-
   const handleLogout = () => {
-    localStorage.removeItem("adminAuth")
+    // Clear cookies
+    document.cookie = 'adminAuthToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+    document.cookie = 'adminAuth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+    
     router.push("/admin/login")
   }
 

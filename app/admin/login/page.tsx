@@ -19,21 +19,14 @@ export default function AdminLogin() {
   const { toast } = useToast()
   const { login, isLoading } = useAdminApi()
 
-  useEffect(() => {
-    const token = localStorage.getItem("adminAuthToken")
-    if (token) {
-      router.push("/admin/dashboard")
-    }
-  }, [router])
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
       const response = await login(email, password)
       
-      // Store the authentication token
-      localStorage.setItem("adminAuthToken", response.token)
-      localStorage.setItem("adminAuth", "true")
+      // Set cookies instead of localStorage
+      document.cookie = `adminAuthToken=${response.access_token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax; secure`
+      document.cookie = `adminAuth=true; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax; secure`
       
       // Redirect to dashboard
       router.push("/admin/dashboard")
