@@ -3,11 +3,12 @@ import "@/app/globals.css"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
+import { Toaster } from "@/components/ui/toaster"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "PowerFlow - Energy Management SaaS Platform",
+  title: "Ubuxa - Energy Management SaaS Platform",
   description:
     "All-in-one platform for managing inverters, batteries, and energy products. Streamline sales, track inventory, manage customers, and generate device tokens with our powerful SaaS solution.",
   icons: {
@@ -29,9 +30,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        {/* <ThemeProvider attribute="class" defaultTheme="light" enableSystem> */}
         {children}
-        {/* </ThemeProvider> */}
+        <Toaster />
       </body>
     </html>
   )
