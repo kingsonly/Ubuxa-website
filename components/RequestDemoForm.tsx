@@ -9,8 +9,8 @@ import {
 } from "../schemas/requestDemoSchema";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import api from "@/lib/axios";
 import { useToast } from "@/hooks/use-toast";
+import api from "@/app/lib/axios";
 
 export default function RequestDemoForm() {
   const {
