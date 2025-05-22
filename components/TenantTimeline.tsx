@@ -5,7 +5,7 @@ export function TenantTimeline({ tenant, formatDate }: { tenant: any; formatDate
     <>
       <TimelineItem icon={<Calendar />} label="Demo scheduled" value={formatDate(tenant.demoDate)} />
 
-      {tenant.status === "processed" && (
+      {tenant.status.toLowerCase() === "processed" && (
         <TimelineItem
           icon={<CheckCircle />}
           label="Tenant processed"

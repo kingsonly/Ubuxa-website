@@ -39,72 +39,8 @@ import { TenantTable, Tenant } from "@/components/TenantTable"
 import AppModal from "@/components/AppModal"
 import { TenantTimeline } from "@/components/TenantTimeline"
 import AdminSidebar from "@/components/SideBar"
+import api from "@/lib/axios"
 
-// Mock tenant data
-const mockTenants = [
-  {
-    id: "t1",
-    name: "Acme Corporation",
-    email: "contact@acmecorp.com",
-    phone: "+1 (555) 123-4567",
-    status: "unprocessed",
-    demoDate: "2023-11-15T10:00:00",
-    contactPerson: "John Smith",
-    notes: "Interested in inventory management features",
-  },
-  {
-    id: "t2",
-    name: "TechNova Solutions",
-    email: "info@technovasolutions.com",
-    phone: "+1 (555) 987-6543",
-    status: "processed",
-    demoDate: "2023-11-10T14:30:00",
-    contactPerson: "Sarah Johnson",
-    notes: "Requires custom integration with their ERP system",
-    monthlyFee: 499,
-    registrationSent: true,
-    registrationCompleted: false,
-  },
-  {
-    id: "t3",
-    name: "Global Energy Partners",
-    email: "contact@globalenergy.com",
-    phone: "+1 (555) 456-7890",
-    status: "processed",
-    demoDate: "2023-11-05T11:00:00",
-    contactPerson: "Michael Brown",
-    notes: "Primarily interested in token generation for their devices",
-    monthlyFee: 799,
-    registrationSent: true,
-    registrationCompleted: true,
-    activationStatus: "pending",
-  },
-  {
-    id: "t4",
-    name: "Sunshine Solar Inc.",
-    email: "support@sunshinesolar.com",
-    phone: "+1 (555) 234-5678",
-    status: "processed",
-    demoDate: "2023-11-02T09:15:00",
-    contactPerson: "Emily Davis",
-    notes: "Looking for comprehensive solution for their expanding business",
-    monthlyFee: 649,
-    registrationSent: true,
-    registrationCompleted: true,
-    activationStatus: "active",
-    activationDate: "2023-11-12T00:00:00",
-  },
-  {
-    id: "t5",
-    name: "PowerGrid Innovations",
-    email: "info@powergridinnovations.com",
-    phone: "+1 (555) 876-5432",
-    status: "unprocessed",
-    demoDate: "2023-11-18T13:00:00",
-    contactPerson: "Robert Wilson",
-    notes: "Referred by Sunshine Solar Inc.",
-  },
-]
 
 export default function AdminDashboard() {
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null)
@@ -112,6 +48,45 @@ export default function AdminDashboard() {
   const [monthlyFee, setMonthlyFee] = useState("")
   const router = useRouter()
   const { toast } = useToast()
+  const [tenantStats, setTenantStats] = useState({
+    unprocessed: 0,
+    pendingRegistration: 0,
+    readyForActivation: 0,
+    active: 0,
+  })
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await api.get("/api/v1/tenants")
+        // TODO: I don't think this is the best way to do this (res.data.data)
+        const tenants: Tenant[] = res.data.data
+        console.log(tenants)
+  
+        const stats = {
+          unprocessed: tenants.filter((t: Tenant) => t.status.toLowerCase() === "unprocessed").length,
+          pendingRegistration: tenants.filter(
+            (t: Tenant) => t.status.toLowerCase() === "processed" && t.registrationSent && !t.registrationCompleted
+          ).length,
+          readyForActivation: tenants.filter(
+            (t: Tenant) =>
+              t.status.toLowerCase() === "processed" &&
+              t.registrationCompleted &&
+              (!t.activationStatus || t.activationStatus === "pending")
+          ).length,
+          active: tenants.filter((t: Tenant) => t.status.toLowerCase() === "active").length,
+        }
+  
+        setTenantStats(stats)
+      } catch (err) {
+        console.error("Failed to fetch tenant stats", err)
+      }
+    }
+  
+    fetchStats()
+  }, [])
+
+  
 
   // Auth diasbled for development
   // useEffect(() => {
@@ -159,6 +134,8 @@ export default function AdminDashboard() {
     setSelectedTenant(tenant)
   }
 
+  console.log(tenantStats)
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return date.toLocaleDateString("en-US", {
@@ -173,38 +150,6 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-slate-50 flex">
       <AdminSidebar onLogout={handleLogout} />
-      {/* <aside className="bg-slate-900 text-white w-64 p-4 flex flex-col">
-        <div className="flex items-center justify-between mb-4">
-          <Image src="/images/ubuxa-logo.png" alt="Ubuxa Logo" width={120} height={32} className="h-8 w-auto" />
-          <button onClick={handleLogout} className="text-slate-400 hover:text-white">
-            <Menu className="h-5 w-5" />
-          </button>
-        </div>
-        <nav className="flex-1">
-          <a href="#" className="flex items-center px-4 py-3 text-blue-400 bg-slate-800 border-l-4 border-blue-600">
-            <BarChart3 className="h-5 w-5" />
-            <span className="ml-3">Dashboard</span>
-          </a>
-          <a href="#" className="flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white">
-            <Users className="h-5 w-5" />
-            <span className="ml-3">Tenants</span>
-          </a>
-          <a href="#" className="flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white">
-            <Building className="h-5 w-5" />
-            <span className="ml-3">Organizations</span>
-          </a>
-          <a href="#" className="flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white">
-            <Settings className="h-5 w-5" />
-            <span className="ml-3">Settings</span>
-          </a>
-        </nav>
-        <div className="mt-4">
-          <button onClick={handleLogout} className="flex items-center text-slate-300 hover:text-white w-full">
-            <LogOut className="h-5 w-5" />
-            <span className="ml-3">Logout</span>
-          </button>
-        </div>
-      </aside> */}
 
       <div className="flex-1 flex flex-col">
         <header className="bg-white border-b border-slate-200 py-4 px-6 flex items-center justify-between">
@@ -234,12 +179,67 @@ export default function AdminDashboard() {
         </header>
 
         <main className="flex-1 p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card><CardContent className="p-6">Unprocessed Placeholder</CardContent></Card>
-            <Card><CardContent className="p-6">Registration Placeholder</CardContent></Card>
-            <Card><CardContent className="p-6">Activation Placeholder</CardContent></Card>
-            <Card><CardContent className="p-6">Active Placeholder</CardContent></Card>
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card className="shadow-sm border">
+            <CardContent className="p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-slate-500">Unprocessed Tenants</p>
+                  <h3 className="text-3xl font-bold text-slate-900">{tenantStats.unprocessed}</h3>
+                </div>
+                <div className="h-12 w-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                  <Clock className="h-6 w-6 text-yellow-600" />
+                </div>
+              </div>
+              <p className="text-sm text-slate-500">Awaiting first call</p>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-sm border">
+            <CardContent className="p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-slate-500">Pending Registration</p>
+                  <h3 className="text-3xl font-bold text-slate-900">{tenantStats.pendingRegistration}</h3>
+                </div>
+                <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Users className="h-6 w-6 text-blue-600" />
+                </div>
+              </div>
+              <p className="text-sm text-slate-500">Registration email sent</p>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-sm border">
+            <CardContent className="p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-slate-500">Ready for Activation</p>
+                  <h3 className="text-3xl font-bold text-slate-900">{tenantStats.readyForActivation}</h3>
+                </div>
+                <div className="h-12 w-12 bg-purple-100 rounded-full flex items-center justify-center">
+                  <User className="h-6 w-6 text-purple-600" />
+                </div>
+              </div>
+              <p className="text-sm text-slate-500">Awaiting system activation</p>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-sm border">
+            <CardContent className="p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-slate-500">Active Tenants</p>
+                  <h3 className="text-3xl font-bold text-slate-900">{tenantStats.active}</h3>
+                </div>
+                <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
+                  <BarChart3 className="h-6 w-6 text-green-600" />
+                </div>
+              </div>
+              <p className="text-sm text-slate-500">Fully onboarded</p>
+            </CardContent>
+          </Card>
+        </div>
 
           <TenantTable
             apiUrl="/api/v1/tenants"

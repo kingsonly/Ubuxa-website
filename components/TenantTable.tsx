@@ -5,12 +5,20 @@ import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Search } from "lucide-react"
+import { ChevronDown, Filter, Search } from "lucide-react"
 import api from "@/lib/axios";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export type Tenant = {
   id: string
-  name: string
+  companyName: string
+  firstName: string
+  lastName: string
   email: string
   phone: string
   demoDate: string
@@ -39,13 +47,14 @@ export function TenantTable({
   showSearch = true,
 }: Props) {
   const [tenants, setTenants] = useState<Tenant[]>([])
+  const [filterStatus, setFilterStatus] = useState("all")
   const [search, setSearch] = useState("")
 
   useEffect(() => {
     const fetchTenants = async () => {
       try {
         const response = await api.get(apiUrl)
-        setTenants(response.data)
+        setTenants(response.data.data)
       } catch (error) {
         console.error("Failed to load tenants:", error)
       }
@@ -63,7 +72,7 @@ export function TenantTable({
     })
 
   const getStatusBadge = (tenant: Tenant) => {
-    if (tenant.status === "unprocessed") {
+    if (tenant.status.toLowerCase() === "unprocessed") {
       return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">Unprocessed</Badge>
     }
     if (tenant.registrationSent && !tenant.registrationCompleted) {
@@ -78,25 +87,72 @@ export function TenantTable({
     return null
   }
 
-  // const filteredTenants = tenants.filter(
-  //   (t) =>
-  //     t.name.toLowerCase().includes(search.toLowerCase()) ||
-  //     t.email.toLowerCase().includes(search.toLowerCase()),
-  // )
+  const filteredTenants = tenants.filter((tenant) => {
+    const matchesSearch =
+      tenant.companyName.toLowerCase().includes(search.toLowerCase()) ||
+      tenant.email.toLowerCase().includes(search.toLowerCase())
+
+    if (filterStatus === "all") return matchesSearch
+    if (filterStatus === "unprocessed") return matchesSearch && tenant.status.toLowerCase() === "unprocessed"
+    if (filterStatus === "processed") return matchesSearch && tenant.status.toLowerCase() === "processed"
+    if (filterStatus === "registration")
+      return matchesSearch && tenant.status.toLowerCase() === "processed" && tenant.registrationSent && !tenant.registrationCompleted
+    if (filterStatus === "activation")
+      return (
+        matchesSearch &&
+        tenant.status.toLowerCase() === "processed" &&
+        tenant.registrationCompleted 
+        // &&
+        // (!tenant.activationStatus || tenant.activationStatus === "pending")
+      )
+
+    return matchesSearch
+  })
 
   return (
     <div className="p-4">
-      {showSearch && (
-        <div className="mb-4 relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <Input
-            className="pl-9"
-            placeholder="Search tenants..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+      <div className="bg-white rounded-lg border border-slate-200 shadow-sm">
+        <div className="p-6 border-b border-slate-200">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <h3 className="text-lg font-semibold text-slate-900">Tenant Management</h3>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              {showSearch && (
+                <div className="mb-4 relative max-w-md">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Input
+                    className="pl-9"
+                    placeholder="Search tenants..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                </div>
+              )}
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="flex items-center">
+                    <Filter className="h-4 w-4 mr-2" />
+                    Filter
+                    <ChevronDown className="h-4 w-4 ml-2" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => setFilterStatus("all")}>All Tenants</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setFilterStatus("unprocessed")}>Unprocessed</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setFilterStatus("processed")}>Processed</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setFilterStatus("registration")}>
+                    Pending Registration
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setFilterStatus("activation")}>
+                    Ready for Activation
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
         </div>
-      )}
+        
 
       <div className="overflow-x-auto rounded border">
         <table className="w-full text-sm">
@@ -111,14 +167,14 @@ export function TenantTable({
             </tr>
           </thead>
           <tbody>
-            {/* {filteredTenants.map((tenant) => (
+            {filteredTenants.map((tenant) => (
               <tr key={tenant.id} className="border-t hover:bg-slate-50">
                 <td className="p-3">
-                  <div className="font-medium text-slate-900">{tenant.name}</div>
+                  <div className="font-medium text-slate-900">{tenant.companyName}</div>
                   <div className="text-slate-500">{tenant.email}</div>
                 </td>
                 <td className="p-3">
-                  <div className="text-slate-900">{tenant.contactPerson}</div>
+                  <div className="text-slate-900">{tenant.firstName} {tenant.lastName}</div>
                   <div className="text-slate-500">{tenant.phone}</div>
                 </td>
                 <td className="p-3 text-slate-500">{formatDate(tenant.demoDate)}</td>
@@ -127,7 +183,7 @@ export function TenantTable({
                   {tenant.monthlyFee ? `$${tenant.monthlyFee}/month` : "-"}
                 </td>
                 <td className="p-3 text-right">
-                  {tenant.status === "unprocessed" ? (
+                  {tenant.status.toLowerCase() === "unprocessed" ? (
                     <Button size="sm" onClick={() => onProcess?.(tenant)}>
                       Process
                     </Button>
@@ -150,10 +206,11 @@ export function TenantTable({
                   No tenants found.
                 </td>
               </tr>
-            )} */}
+            )}
           </tbody>
         </table>
       </div>
+    </div>
     </div>
   )
 }
