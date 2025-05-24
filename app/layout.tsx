@@ -14,10 +14,10 @@ export const metadata: Metadata = {
   icons: {
     icon: [
 
-      { url: '/images/ubuxa-logo.png', type: 'image/png' }, // Additional icon
+      { url: '/images/logo-icon.png', type: 'image/png' }, // Additional icon
     ],
     apple: [
-      { url: '/images/ubuxa-logo.png', type: 'image/png' }, // Additional icon
+      { url: '/images/logo-icon.png', type: 'image/png' }, // Additional icon
     ],
   },
 }
