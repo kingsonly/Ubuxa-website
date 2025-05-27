@@ -251,6 +251,7 @@ export default function AdminDashboard() {
             onProcess={handleProcess}
             onActivate={handleActivate}
             onViewDetails={handleViewDetails}
+            useMockData={true}
           />
         </main>
       </div>

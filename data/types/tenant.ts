@@ -5,15 +5,16 @@ export type Tenant = {
   lastName: string
   email: string
   phone: string
-  demoDate: string
+  demoDate?: string
   contactPerson: string
-  status: TenantStatus // Using string type for compatibility with existing code
+  status: string
   monthlyFee?: number
   registrationSent?: boolean
   registrationCompleted?: boolean
   activationStatus?: string
   moreInfo?: string
   createdAt?: string
+  paymentProvider?: string
 }
 
 export enum TenantStatus {

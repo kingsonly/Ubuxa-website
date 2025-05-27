@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Tenant, TenantStatus } from "@/data/types/tenant"
+import { mockTenants } from "@/data/mock/admin-dashboard"
 
 
 export type Props = {
@@ -22,6 +23,7 @@ export type Props = {
   onActivate?: (tenant: Tenant) => void
   onViewDetails?: (tenant: Tenant) => void
   showSearch?: boolean
+  useMockData?: boolean
 }
 
 export function TenantTable({
@@ -30,12 +32,18 @@ export function TenantTable({
   onActivate,
   onViewDetails,
   showSearch = true,
+  useMockData = false
 }: Props) {
   const [tenants, setTenants] = useState<Tenant[]>([])
   const [filterStatus, setFilterStatus] = useState("all")
   const [search, setSearch] = useState("")
 
   useEffect(() => {
+    if (useMockData) {
+      setTenants(mockTenants)
+      return
+    }
+  
     const fetchTenants = async () => {
       try {
         const response = await api.get(apiUrl)
@@ -45,7 +53,7 @@ export function TenantTable({
       }
     }
     fetchTenants()
-  }, [apiUrl])
+  }, [apiUrl, useMockData])
 
   const formatDate = (dateStr: string) =>
     new Date(dateStr).toLocaleString(undefined, {
