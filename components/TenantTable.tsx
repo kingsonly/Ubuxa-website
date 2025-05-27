@@ -13,23 +13,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Tenant, TenantStatus } from "@/data/types/tenant"
 
-export type Tenant = {
-  id: string
-  companyName: string
-  firstName: string
-  lastName: string
-  email: string
-  phone: string
-  demoDate: string
-  contactPerson: string
-  status: string
-  monthlyFee?: number
-  registrationSent?: boolean
-  registrationCompleted?: boolean
-  activationStatus?: string
-  moreInfo?: string
-}
 
 export type Props = {
   apiUrl?: string
@@ -72,41 +57,101 @@ export function TenantTable({
     })
 
   const getStatusBadge = (tenant: Tenant) => {
-    if (tenant.status.toLowerCase() === "unprocessed") {
-      return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">Unprocessed</Badge>
+    const status = tenant.status.toUpperCase();
+    
+    switch(status) {
+      case TenantStatus.UNPROCESSED:
+        return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">Unprocessed</Badge>;
+        
+      case TenantStatus.SET_DEMO_DATE:
+        return <Badge className="bg-orange-100 text-orange-700 border-orange-200">Demo Date Set</Badge>;
+        
+      case TenantStatus.PENDING:
+        return <Badge className="bg-blue-100 text-blue-700 border-blue-200">Pending Payment</Badge>;
+        
+      case TenantStatus.ONBOARD_PAYMENT_DETAILS:
+        return <Badge className="bg-indigo-100 text-indigo-700 border-indigo-200">Payment Setup</Badge>;
+        
+      case TenantStatus.ONBOARD_CUSTOMIZATION:
+        return <Badge className="bg-purple-100 text-purple-700 border-purple-200">Customization</Badge>;
+        
+      case TenantStatus.ONBOARD_ROLE:
+        return <Badge className="bg-pink-100 text-pink-700 border-pink-200">Role Setup</Badge>;
+        
+      case TenantStatus.ONBOARD_TEAMMATE:
+        return <Badge className="bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200">Adding Teammate</Badge>;
+        
+      case TenantStatus.ACTIVE:
+        return <Badge className="bg-green-100 text-green-700 border-green-200">Active</Badge>;
+        
+      case TenantStatus.REJECTED:
+        return <Badge className="bg-red-100 text-red-700 border-red-200">Rejected</Badge>;
+        
+      case TenantStatus.DEACTIVATED:
+        return <Badge className="bg-slate-100 text-slate-700 border-slate-200">Deactivated</Badge>;
+        
+      default:
+        // For backward compatibility with old status values
+        if (tenant.registrationSent && !tenant.registrationCompleted) {
+          return <Badge className="bg-blue-100 text-blue-700 border-blue-200">Registration Pending</Badge>;
+        }
+        if (tenant.registrationCompleted && tenant.activationStatus !== "active") {
+          return <Badge className="bg-purple-100 text-purple-700 border-purple-200">Ready for Activation</Badge>;
+        }
+        if (tenant.activationStatus === "active") {
+          return <Badge className="bg-green-100 text-green-700 border-green-200">Active</Badge>;
+        }
+        return <Badge className="bg-gray-100 text-gray-700 border-gray-200">{tenant.status}</Badge>;
     }
-    if (tenant.registrationSent && !tenant.registrationCompleted) {
-      return <Badge className="bg-blue-100 text-blue-700 border-blue-200">Registration Pending</Badge>
-    }
-    if (tenant.registrationCompleted && tenant.activationStatus !== "active") {
-      return <Badge className="bg-purple-100 text-purple-700 border-purple-200">Ready for Activation</Badge>
-    }
-    if (tenant.activationStatus === "active") {
-      return <Badge className="bg-green-100 text-green-700 border-green-200">Active</Badge>
-    }
-    return null
   }
 
   const filteredTenants = tenants.filter((tenant) => {
     const matchesSearch =
       tenant.companyName.toLowerCase().includes(search.toLowerCase()) ||
-      tenant.email.toLowerCase().includes(search.toLowerCase())
+      tenant.email.toLowerCase().includes(search.toLowerCase());
+    
+    const status = tenant.status.toUpperCase();
 
-    if (filterStatus === "all") return matchesSearch
-    if (filterStatus === "unprocessed") return matchesSearch && tenant.status.toLowerCase() === "unprocessed"
-    if (filterStatus === "processed") return matchesSearch && tenant.status.toLowerCase() === "processed"
+    if (filterStatus === "all") return matchesSearch;
+    
+    // Handle specific status filters
+    if (filterStatus === "unprocessed") 
+      return matchesSearch && status === TenantStatus.UNPROCESSED;
+    
+    if (filterStatus === "demo-set") 
+      return matchesSearch && status === TenantStatus.SET_DEMO_DATE;
+    
+    if (filterStatus === "pending") 
+      return matchesSearch && status === TenantStatus.PENDING;
+    
+    if (filterStatus === "onboarding")
+      return matchesSearch && [
+        TenantStatus.ONBOARD_PAYMENT_DETAILS,
+        TenantStatus.ONBOARD_CUSTOMIZATION,
+        TenantStatus.ONBOARD_ROLE,
+        TenantStatus.ONBOARD_TEAMMATE
+      ].includes(status as TenantStatus);
+    
+    if (filterStatus === "active")
+      return matchesSearch && status === TenantStatus.ACTIVE;
+    
+    if (filterStatus === "rejected")
+      return matchesSearch && status === TenantStatus.REJECTED;
+    
+    if (filterStatus === "deactivated")
+      return matchesSearch && status === TenantStatus.DEACTIVATED;
+
+    // For backward compatibility
+    if (filterStatus === "processed") 
+      return matchesSearch && tenant.status.toLowerCase() === "processed";
+    
     if (filterStatus === "registration")
-      return matchesSearch && tenant.status.toLowerCase() === "processed" && tenant.registrationSent && !tenant.registrationCompleted
+      return matchesSearch && tenant.registrationSent && !tenant.registrationCompleted;
+    
     if (filterStatus === "activation")
-      return (
-        matchesSearch &&
-        tenant.status.toLowerCase() === "processed" &&
-        tenant.registrationCompleted 
-        // &&
-        // (!tenant.activationStatus || tenant.activationStatus === "pending")
-      )
+      return matchesSearch && tenant.registrationCompleted && tenant.activationStatus !== "active";
 
-    return matchesSearch
+    return matchesSearch;
   })
 
   return (
@@ -140,13 +185,12 @@ export function TenantTable({
                 <DropdownMenuContent>
                   <DropdownMenuItem onClick={() => setFilterStatus("all")}>All Tenants</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setFilterStatus("unprocessed")}>Unprocessed</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setFilterStatus("processed")}>Processed</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setFilterStatus("registration")}>
-                    Pending Registration
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setFilterStatus("activation")}>
-                    Ready for Activation
-                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setFilterStatus("demo-set")}>Demo Date Set</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setFilterStatus("pending")}>Pending Payment</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setFilterStatus("onboarding")}>Onboarding</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setFilterStatus("active")}>Active</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setFilterStatus("rejected")}>Rejected</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setFilterStatus("deactivated")}>Deactivated</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
