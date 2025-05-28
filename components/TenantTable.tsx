@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { ChevronDown, Filter, Search } from "lucide-react"
-import api from "@/lib/axios";
+import api from "@/app/lib/axios";
 import {
   DropdownMenu,
   DropdownMenuContent,

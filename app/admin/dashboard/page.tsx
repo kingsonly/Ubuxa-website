@@ -39,7 +39,7 @@ import { TenantTable } from "@/components/TenantTable"
 import AppModal from "@/components/AppModal"
 import { TenantTimeline } from "@/components/TenantTimeline"
 import AdminSidebar from "@/components/SideBar"
-import api from "@/lib/axios"
+import api from "@/app/lib/axios"
 import { Tenant, TenantStatus } from "@/data/types/tenant"
 
 
