@@ -45,11 +45,12 @@ import { Tenant, TenantStatus } from "@/data/types/tenant"
 
 export default function AdminDashboard() {
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null)
-  const [isProcessingModalOpen, setIsProcessingModalOpen] = useState(false)
   const [monthlyFee, setMonthlyFee] = useState("")
   const [isDemoDateModalOpen, setIsDemoDateModalOpen] = useState(false);
   const [isFeeModalOpen, setIsFeeModalOpen] = useState(false);
+  const [isViewDetailsModalOpen, setIsViewDetailsModalOpen] = useState(false);
   const [demoDate, setDemoDate] = useState(new Date().toISOString().split('T')[0]);
+  const [demoTime, setDemoTime] = useState("14:00");
   const router = useRouter()
   const { toast } = useToast()
   const [tenantStats, setTenantStats] = useState({
@@ -105,28 +106,6 @@ export default function AdminDashboard() {
     router.push("/admin/login")
   }
 
-  const handleProcess = (tenant: Tenant) => {
-    setSelectedTenant(tenant)
-    setIsProcessingModalOpen(true)
-  }
-
-  const handleProcessSubmit = () => {
-    if (!monthlyFee || isNaN(Number(monthlyFee)) || Number(monthlyFee) <= 0) {
-      toast({
-        title: "Invalid fee",
-        description: "Please enter a valid monthly fee",
-        variant: "destructive",
-      })
-      return
-    }
-    toast({
-      title: "Tenant processed",
-      description: `Registration email sent to ${selectedTenant?.firstName} ${selectedTenant?.lastName}`,
-    })
-    setIsProcessingModalOpen(false)
-    setMonthlyFee("")
-  }
-
   const handleActivate = (tenant: Tenant) => {
     toast({
       title: "Tenant activated",
@@ -136,14 +115,22 @@ export default function AdminDashboard() {
 
   const handleViewDetails = (tenant: Tenant) => {
     setSelectedTenant(tenant)
+    setIsViewDetailsModalOpen(true)
   }
 
-  const handleSetDemoDate = async (tenant: Tenant) => {
+  const handleSetDemoDate = (tenant: Tenant) => {
+    setSelectedTenant(tenant)
+    setIsDemoDateModalOpen(true)
+  }
+
+  const handleSetDemoDateSubmit = async (tenant: Tenant) => {
     try {
       setIsDemoDateModalOpen(true);
       
+      const date = new Date(`${demoDate}T${demoTime}`);
+      
       const response = await api.patch(`/api/v1/tenants/${tenant.id}`, {
-        demoDate: demoDate,
+        demoDate: date.toISOString(),
         status: TenantStatus.SET_DEMO_DATE
       });
       
@@ -153,7 +140,7 @@ export default function AdminDashboard() {
       
       toast({
         title: "Demo date set",
-        description: `Demo date set for ${updatedTenant.companyName}`,
+        description: `Demo date set for ${updatedTenant.companyName} at ${formatTime(date)}`,
         variant: "default",
       });
     } catch (error) {
@@ -165,7 +152,12 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleSetFee = async (tenant: Tenant) => {
+  const handleSetFee = (tenant: Tenant) => {
+    setSelectedTenant(tenant)
+    setIsFeeModalOpen(true)
+  }
+
+  const handleSetFeeSubmit = async (tenant: Tenant) => {
     try {
       setIsFeeModalOpen(true);
       
@@ -204,6 +196,14 @@ export default function AdminDashboard() {
       minute: "2-digit",
     })
   }
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
 
   const handleSaveNotes = () => {
     console.log("Save notes")
@@ -305,22 +305,21 @@ export default function AdminDashboard() {
 
           <TenantTable
             apiUrl="/api/v1/tenants"
-            onProcess={handleProcess}
             onActivate={handleActivate}
             onViewDetails={handleViewDetails}
             onSetDemoDate={handleSetDemoDate}
             onSetFee={handleSetFee}
-            useMockData={true}
+            useMockData={false}
           />
         </main>
       </div>
 
       <AppModal
-        isOpen={!!selectedTenant && !isProcessingModalOpen}
-        onClose={() => setSelectedTenant(null)}
+        isOpen={isViewDetailsModalOpen}
+        onClose={() => setIsViewDetailsModalOpen(false)}
         title={selectedTenant?.companyName}
         className="max-w-3xl"
-        footer={<Button variant="outline" onClick={() => setSelectedTenant(null)}>Close</Button>}
+        footer={<Button variant="outline" onClick={() => setIsViewDetailsModalOpen(false)}>Close</Button>}
       >
         <Tabs defaultValue="details">
           <TabsList className="mb-4">
@@ -406,7 +405,7 @@ export default function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="activity" className="space-y-4">
-            <TenantTimeline tenant={selectedTenant} formatDate={formatDate} />
+            <TenantTimeline tenant={selectedTenant!} formatDate={formatDate} />
           </TabsContent>
 
           {/* <TabsContent value="notes" className="space-y-4">
@@ -417,23 +416,6 @@ export default function AdminDashboard() {
             />
           </TabsContent> */}
 
-          {selectedTenant?.status?.toUpperCase() === TenantStatus.SET_DEMO_DATE && (
-            <TabsContent value="process" className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700">Monthly Fee ($)</label>
-                <Input
-                  type="number"
-                  value={monthlyFee}
-                  onChange={(e) => setMonthlyFee(e.target.value)}
-                  placeholder="Enter monthly fee"
-                />
-              </div>
-              <div className="flex justify-end">
-                <Button variant="outline" onClick={() => setSelectedTenant(null)}>Cancel</Button>
-                <Button onClick={handleProcessSubmit}>Process</Button>
-              </div>
-            </TabsContent>
-          )}
         </Tabs>
       </AppModal>
 
@@ -446,18 +428,29 @@ export default function AdminDashboard() {
             <Button variant="outline" onClick={() => setIsDemoDateModalOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={() => handleSetDemoDate(selectedTenant!)}>Set Demo Date</Button>
+            <Button onClick={() => handleSetDemoDateSubmit(selectedTenant!)}>Set Demo Date</Button>
           </>
         }
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700">Demo Date</label>
+            <label className="block text-sm font-medium text-slate-700 pb-2">Date</label>
             <Input
               type="date"
               value={demoDate}
               onChange={(e) => setDemoDate(e.target.value)}
               min={new Date().toISOString().split('T')[0]}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 pb-2">Time</label>
+            <Input
+              type="time"
+              value={demoTime}
+              onChange={(e) => setDemoTime(e.target.value)}
+              min="09:00"
+              max="17:00"
+              step="900" // 15-minute intervals
             />
           </div>
         </div>
@@ -475,38 +468,7 @@ export default function AdminDashboard() {
             <Button variant="outline" onClick={() => setIsFeeModalOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSetFee}>Set Fee</Button>
-          </>
-        }
-      >
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700">Monthly Fee ($)</label>
-            <Input
-              type="number"
-              value={monthlyFee}
-              onChange={(e) => setMonthlyFee(e.target.value)}
-              placeholder="Enter monthly fee"
-              min="0"
-              step="0.01"
-            />
-          </div>
-        </div>
-      </AppModal>
-
-      <AppModal
-        isOpen={isProcessingModalOpen}
-        onClose={() => {
-          setIsProcessingModalOpen(false)
-          setMonthlyFee("")
-        }}
-        title={`Process Tenant: ${selectedTenant?.firstName} ${selectedTenant?.lastName}`}
-        footer={
-          <>
-            <Button variant="outline" onClick={() => setIsProcessingModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleProcessSubmit}>Process</Button>
+            <Button onClick={() => handleSetFeeSubmit(selectedTenant!)}>Set Fee</Button>
           </>
         }
       >

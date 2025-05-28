@@ -19,7 +19,6 @@ import { mockTenants } from "@/data/mock/admin-dashboard"
 
 export type Props = {
   apiUrl?: string
-  onProcess?: (tenant: Tenant) => void
   onActivate?: (tenant: Tenant) => void
   onViewDetails?: (tenant: Tenant) => void
   onSetDemoDate?: (tenant: Tenant) => void
@@ -30,7 +29,6 @@ export type Props = {
 
 export function TenantTable({
   apiUrl = "/api/v1/tenants",
-  onProcess,
   onActivate,
   onViewDetails,
   onSetDemoDate,
