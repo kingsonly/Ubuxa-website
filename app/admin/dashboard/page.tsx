@@ -47,6 +47,9 @@ export default function AdminDashboard() {
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null)
   const [isProcessingModalOpen, setIsProcessingModalOpen] = useState(false)
   const [monthlyFee, setMonthlyFee] = useState("")
+  const [isDemoDateModalOpen, setIsDemoDateModalOpen] = useState(false);
+  const [isFeeModalOpen, setIsFeeModalOpen] = useState(false);
+  const [demoDate, setDemoDate] = useState(new Date().toISOString().split('T')[0]);
   const router = useRouter()
   const { toast } = useToast()
   const [tenantStats, setTenantStats] = useState({
@@ -118,7 +121,7 @@ export default function AdminDashboard() {
     }
     toast({
       title: "Tenant processed",
-      description: `Registration email sent to ${selectedTenant.name}`,
+      description: `Registration email sent to ${selectedTenant?.firstName} ${selectedTenant?.lastName}`,
     })
     setIsProcessingModalOpen(false)
     setMonthlyFee("")
@@ -127,13 +130,67 @@ export default function AdminDashboard() {
   const handleActivate = (tenant: Tenant) => {
     toast({
       title: "Tenant activated",
-      description: `${tenant.name} has been successfully activated`,
+      description: `${tenant.companyName} has been successfully activated`,
     })
   }
 
   const handleViewDetails = (tenant: Tenant) => {
     setSelectedTenant(tenant)
   }
+
+  const handleSetDemoDate = async (tenant: Tenant) => {
+    try {
+      setIsDemoDateModalOpen(true);
+      
+      const response = await api.patch(`/api/v1/tenants/${tenant.id}`, {
+        demoDate: demoDate,
+        status: TenantStatus.SET_DEMO_DATE
+      });
+      
+      const updatedTenant = await response.data;
+      setSelectedTenant(updatedTenant);
+      setIsDemoDateModalOpen(false);
+      
+      toast({
+        title: "Demo date set",
+        description: `Demo date set for ${updatedTenant.companyName}`,
+        variant: "default",
+      });
+    } catch (error) {
+      toast({
+        title: "Failed to set demo date",
+        description: "An error occurred while setting the demo date",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSetFee = async (tenant: Tenant) => {
+    try {
+      setIsFeeModalOpen(true);
+      
+      const response = await api.patch(`/api/v1/tenants/onboard-company-agreed-amount/${tenant.id}`, {
+        monthlyFee: Number(monthlyFee),
+        status: TenantStatus.PENDING
+      });
+      
+      const updatedTenant = await response.data;
+      setSelectedTenant(updatedTenant);
+      setIsFeeModalOpen(false);
+      
+      toast({
+        title: "Fee set",
+        description: `Fee set for ${updatedTenant.companyName}`,
+        variant: "default",
+      });
+    } catch (error) {
+      toast({
+        title: "Failed to set fee",
+        description: "An error occurred while setting the fee",
+        variant: "destructive",
+      });
+    }
+  };
 
   console.log(tenantStats)
 
@@ -251,6 +308,8 @@ export default function AdminDashboard() {
             onProcess={handleProcess}
             onActivate={handleActivate}
             onViewDetails={handleViewDetails}
+            onSetDemoDate={handleSetDemoDate}
+            onSetFee={handleSetFee}
             useMockData={true}
           />
         </main>
@@ -358,7 +417,7 @@ export default function AdminDashboard() {
             />
           </TabsContent> */}
 
-          {selectedTenant?.status?.toUpperCase() === TenantStatus.UNPROCESSED && (
+          {selectedTenant?.status?.toUpperCase() === TenantStatus.SET_DEMO_DATE && (
             <TabsContent value="process" className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700">Monthly Fee ($)</label>
@@ -376,6 +435,63 @@ export default function AdminDashboard() {
             </TabsContent>
           )}
         </Tabs>
+      </AppModal>
+
+      <AppModal
+        isOpen={isDemoDateModalOpen}
+        onClose={() => setIsDemoDateModalOpen(false)}
+        title={`Set Demo Date for ${selectedTenant?.companyName}`}
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setIsDemoDateModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => handleSetDemoDate(selectedTenant!)}>Set Demo Date</Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700">Demo Date</label>
+            <Input
+              type="date"
+              value={demoDate}
+              onChange={(e) => setDemoDate(e.target.value)}
+              min={new Date().toISOString().split('T')[0]}
+            />
+          </div>
+        </div>
+      </AppModal>
+
+      <AppModal
+        isOpen={isFeeModalOpen}
+        onClose={() => {
+          setIsFeeModalOpen(false)
+          setMonthlyFee("")
+        }}
+        title={`Set Monthly Fee for ${selectedTenant?.companyName}`}
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setIsFeeModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSetFee}>Set Fee</Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700">Monthly Fee ($)</label>
+            <Input
+              type="number"
+              value={monthlyFee}
+              onChange={(e) => setMonthlyFee(e.target.value)}
+              placeholder="Enter monthly fee"
+              min="0"
+              step="0.01"
+            />
+          </div>
+        </div>
       </AppModal>
 
       <AppModal
@@ -402,6 +518,8 @@ export default function AdminDashboard() {
               value={monthlyFee}
               onChange={(e) => setMonthlyFee(e.target.value)}
               placeholder="Enter monthly fee"
+              min="0"
+              step="0.01"
             />
           </div>
         </div>

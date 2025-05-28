@@ -22,6 +22,8 @@ export type Props = {
   onProcess?: (tenant: Tenant) => void
   onActivate?: (tenant: Tenant) => void
   onViewDetails?: (tenant: Tenant) => void
+  onSetDemoDate?: (tenant: Tenant) => void
+  onSetFee?: (tenant: Tenant) => void
   showSearch?: boolean
   useMockData?: boolean
 }
@@ -31,6 +33,8 @@ export function TenantTable({
   onProcess,
   onActivate,
   onViewDetails,
+  onSetDemoDate,
+  onSetFee,
   showSearch = true,
   useMockData = false
 }: Props) {
@@ -78,16 +82,10 @@ export function TenantTable({
         return <Badge className="bg-blue-100 text-blue-700 border-blue-200">Pending Payment</Badge>;
         
       case TenantStatus.ONBOARD_PAYMENT_DETAILS:
-        return <Badge className="bg-indigo-100 text-indigo-700 border-indigo-200">Payment Setup</Badge>;
-        
       case TenantStatus.ONBOARD_CUSTOMIZATION:
-        return <Badge className="bg-purple-100 text-purple-700 border-purple-200">Customization</Badge>;
-        
       case TenantStatus.ONBOARD_ROLE:
-        return <Badge className="bg-pink-100 text-pink-700 border-pink-200">Role Setup</Badge>;
-        
       case TenantStatus.ONBOARD_TEAMMATE:
-        return <Badge className="bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200">Adding Teammate</Badge>;
+        return <Badge className="bg-purple-100 text-purple-700 border-purple-200">Onboarding</Badge>;
         
       case TenantStatus.ACTIVE:
         return <Badge className="bg-green-100 text-green-700 border-green-200">Active</Badge>;
@@ -109,7 +107,7 @@ export function TenantTable({
         if (tenant.activationStatus === "active") {
           return <Badge className="bg-green-100 text-green-700 border-green-200">Active</Badge>;
         }
-        return <Badge className="bg-gray-100 text-gray-700 border-gray-200">{tenant.status}</Badge>;
+        return <Badge className="bg-gray-100 text-gray-700 border-gray-200">Unknown</Badge>;
     }
   }
 
@@ -229,20 +227,19 @@ export function TenantTable({
                   <div className="text-slate-900">{tenant.firstName} {tenant.lastName}</div>
                   <div className="text-slate-500">{tenant.phone}</div>
                 </td>
-                <td className="p-3 text-slate-500">{formatDate(tenant.demoDate)}</td>
+                <td className="p-3 text-slate-500">{formatDate(tenant.demoDate!)}</td>
                 <td className="p-3">{getStatusBadge(tenant)}</td>
                 <td className="p-3 text-slate-500">
                   {tenant.monthlyFee ? `$${tenant.monthlyFee}/month` : "-"}
                 </td>
                 <td className="p-3 text-right">
-                  {tenant.status.toLowerCase() === "unprocessed" ? (
-                    <Button size="sm" onClick={() => onProcess?.(tenant)}>
-                      Process
+                  {tenant.status.toLowerCase() === "unprocessed" && tenant.demoDate == null ? (
+                    <Button size="sm" onClick={() => onSetDemoDate?.(tenant)}>
+                      Set Demo Date
                     </Button>
-                  ) : tenant.registrationCompleted &&
-                    tenant.activationStatus !== "active" ? (
-                    <Button size="sm" onClick={() => onActivate?.(tenant)}>
-                      Activate
+                  ) : tenant.status.toLowerCase() === "set_demo_date" && tenant.demoDate != null && tenant.monthlyFee == null ? (
+                    <Button size="sm" onClick={() => onSetFee?.(tenant)}>
+                      Set Fee
                     </Button>
                   ) : (
                     <Button size="sm" variant="outline" onClick={() => onViewDetails?.(tenant)}>
