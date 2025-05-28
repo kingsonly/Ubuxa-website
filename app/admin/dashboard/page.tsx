@@ -102,7 +102,10 @@ export default function AdminDashboard() {
   // }, [router])
 
   const handleLogout = () => {
-    localStorage.removeItem("adminAuth")
+    // Clear cookies
+    document.cookie = 'adminAuthToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+    document.cookie = 'adminAuth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+    
     router.push("/admin/login")
   }
 

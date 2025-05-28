@@ -1,6 +1,7 @@
 "use client";
 
 import { CheckCircle } from "lucide-react";
+import Image from "next/image"
 import { Button } from "@/components/ui/button";
 import {
   RequestDemoFormInput,
@@ -8,8 +9,8 @@ import {
 } from "../schemas/requestDemoSchema";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import api from "@/lib/axios";
 import { useToast } from "@/hooks/use-toast";
+import api from "@/app/lib/axios";
 
 export default function RequestDemoForm() {
   const {
@@ -209,11 +210,11 @@ export default function RequestDemoForm() {
                 </div>
 
                 <Button
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg"
-                  type="submit"
-                  disabled={isSubmitting}
+                  className={`w-full ${isSubmitting ? "bg-white" : "bg-blue-600"} ${isSubmitting ? "hover:bg-white" : "hover:bg-blue-700"}  text-white py-4 text-lg`}
+                  type={isSubmitting ? "button" : "submit"}
+
                 >
-                  {isSubmitting ? "Submitting..." : "Request Demo"}
+                  {isSubmitting ? <Image alt="loader" src="/images/loader.gif" width={100} height={100} /> : "Request Demo"}
                 </Button>
 
                 <p className="text-sm text-gray-500 text-center">
