@@ -22,7 +22,7 @@ export const useAdminApi = () => {
   // Authentication
   const login = async (email: string, password: string) => {
     return apiCall({
-      endpoint: "/admin/login",
+      endpoint: "/api/v1/admin/login",
       method: "post",
       data: { email, password },
       successMessage: "Login successful",
@@ -31,7 +31,7 @@ export const useAdminApi = () => {
 
   const logout = async () => {
     return apiCall({
-      endpoint: "/admin/logout",
+      endpoint: "/api/v1/admin/logout",
       method: "post",
       successMessage: "Logged out successfully",
     })
@@ -39,7 +39,7 @@ export const useAdminApi = () => {
 
   const validateSession = async () => {
     return apiCall({
-      endpoint: "/admin/validate",
+      endpoint: "/api/v1/admin/validate",
       method: "get",
       showToast: false,
     })
@@ -48,14 +48,14 @@ export const useAdminApi = () => {
   // Tenant Management
   const getTenants = async () => {
     return apiCall({
-      endpoint: "/admin/tenants",
+      endpoint: "/api/v1/admin/tenants",
       method: "get",
     })
   }
 
   const processTenant = async (tenantId: string, monthlyFee: number) => {
     return apiCall({
-      endpoint: `/admin/tenants/${tenantId}/process`,
+      endpoint: `/api/v1/admin/tenants/${tenantId}/process`,
       method: "post",
       data: { monthlyFee },
       successMessage: "Tenant processed successfully",
@@ -64,7 +64,7 @@ export const useAdminApi = () => {
 
   const activateTenant = async (tenantId: string) => {
     return apiCall({
-      endpoint: `/admin/tenants/${tenantId}/activate`,
+      endpoint: `/api/v1/admin/tenants/${tenantId}/activate`,
       method: "post",
       successMessage: "Tenant activated successfully",
     })
@@ -73,7 +73,7 @@ export const useAdminApi = () => {
   // Admin Management
   const inviteAdmin = async (email: string) => {
     return apiCall({
-      endpoint: "/admin/invite",
+      endpoint: "/api/v1/admin/invite",
       method: "post",
       data: { email },
       successMessage: "Invitation sent successfully",
@@ -82,7 +82,7 @@ export const useAdminApi = () => {
 
   const setPassword = async (token: string, password: string) => {
     return apiCall({
-      endpoint: "/admin/set-password",
+      endpoint: "/api/v1/admin/set-password",
       method: "post",
       data: { token, password },
       successMessage: "Password set successfully",

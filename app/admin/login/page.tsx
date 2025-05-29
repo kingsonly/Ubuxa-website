@@ -12,8 +12,8 @@ import Link from "next/link"
 import { useAdminApi } from "@/app/lib/admin"
 
 export default function AdminLogin() {
-  const [email, setEmail] = useState("admin@ubuxa.com")
-  const [password, setPassword] = useState("admin123")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
@@ -23,14 +23,14 @@ export default function AdminLogin() {
     e.preventDefault()
     try {
       const response = await login(email, password)
-      
+
       // Set cookies instead of localStorage
       document.cookie = `adminAuthToken=${response.access_token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax; secure`
       document.cookie = `adminAuth=true; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax; secure`
-      
+
       // Redirect to dashboard
       router.push("/admin/dashboard")
-      
+
       toast({
         title: "Login successful",
         description: "You have been logged in successfully",
@@ -44,12 +44,12 @@ export default function AdminLogin() {
       <div className="w-full max-w-md px-4">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <Image 
-              src="/images/ubuxa-logo.png" 
-              alt="Ubuxa Logo" 
-              width={180} 
-              height={48} 
-              className="h-12 w-auto" 
+            <Image
+              src="/images/ubuxa-logo.png"
+              alt="Ubuxa Logo"
+              width={180}
+              height={48}
+              className="h-12 w-auto"
               priority
             />
           </div>
@@ -118,9 +118,9 @@ export default function AdminLogin() {
               </div>
             </CardContent>
             <CardFooter className="flex flex-col gap-3">
-              <Button 
-                type="submit" 
-                className="w-full bg-blue-600 hover:bg-blue-700" 
+              <Button
+                type="submit"
+                className="w-full bg-blue-600 hover:bg-blue-700"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -133,11 +133,11 @@ export default function AdminLogin() {
                   </span>
                 ) : "Sign In"}
               </Button>
-              
+
               <div className="text-sm text-slate-600">
                 Need an account?{" "}
-                <Link 
-                  href="/admin/invite" 
+                <Link
+                  href="/admin/invite"
                   className="text-blue-600 hover:text-blue-800 hover:underline"
                 >
                   Request access
@@ -148,8 +148,8 @@ export default function AdminLogin() {
         </Card>
 
         <div className="mt-6 text-center">
-          <Link 
-            href="/admin/forgot-password" 
+          <Link
+            href="/admin/forgot-password"
             className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
           >
             Forgot your password?
